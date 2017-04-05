@@ -2,7 +2,6 @@
 package main
 
 import (
-	"example/app"
 	"fmt"
 	"time"
 
@@ -13,30 +12,52 @@ import (
 	"common/logging"
 
 	_ "github.com/go-sql-driver/mysql"
+	"github.com/drone/routes"
+	
+	"authority/handler"
+	"authority/dbaccess"
 )
+
+func init() {
+	//配置解析
+	InitConfigure("conf/config.json")
+	//mysql
+	dbaccess.InitMysql(Cfg.Server.Mysql)
+}
 
 //注册http回调
 func registerHttpHandle() {
-	http.HandleFunc("/test", app.HandleTest)
-	//mux := routes.New()
-	//mux.Get("/publish/history/opt/", app.HandleHistoryOptQuery)
-	//mux.Post("/publish/history/opt/:user_id", app.HandleHistoryOptCreate)
-	//http.Handle("/", mux)
+	//http.HandleFunc("/test", app.HandleTest)
+	mux := routes.New()
+	mux.Get("/authority/user/list", handler.HandleUserQuery)
+	mux.Post("/authority/user/register", handler.HandleUserCreate)
+	mux.Del("/authority/user/delete", handler.HandleUserDelete)
+	mux.Del("/authority/user/delete/id/:id", handler.HandleUserDeleteById)
+	mux.Del("/authority/user/delete/code/:code", handler.HandleUserDeleteByCode)
+	mux.Get("/authority/user/:user_id/authority", handler.HandleUserAuthorityGet)
+	mux.Post("/authority/user/authority/grant", handler.HandleUserAuthorityGrant)
+	mux.Post("/authority/user/authority/check", handler.HandleUserAuthorityCheck)
+	mux.Get("/authority/authority/get/id/:id",handler.HandleQueryAuthority)
+	mux.Get("/authority/authority/get/code/:code",handler.HandleQueryAuthority)
+	mux.Get("/authority/authority/get/level/:group",handler.HandleQueryAuthority)
+	mux.Get("/authority/authority/get/group/:code",handler.HandleQueryAuthorityGroupAll)
+	mux.Get("/authority/authority/get/group",handler.HandleQueryAuthorityGroupAll)
+	mux.Post("/authority/authority/register", handler.HandleCreateAuthority)
+	mux.Post("/authority/authority/update/name", handler.HandleUpdateAuthorityName)
+	http.Handle("/", mux)
 }
 
 func main() {
-	//配置解析
-	app.Init("conf/config.json")
-
+	
 	//日志
-	if err := libutil.TRLogger(app.Cfg.Log.File, app.Cfg.Log.Level, app.Cfg.Log.Name, app.Cfg.Log.Suffix, app.Cfg.Prog.Daemon); err != nil {
+	if err := libutil.TRLogger(Cfg.Log.File, Cfg.Log.Level, Cfg.Log.Name, Cfg.Log.Suffix, Cfg.Prog.Daemon); err != nil {
 		fmt.Printf("init time rotate logger error: %s\n", err.Error())
 		return
 	}
-	if app.Cfg.Prog.CPU == 0 {
+	if Cfg.Prog.CPU == 0 {
 		runtime.GOMAXPROCS(runtime.NumCPU()) //配0就用所有核
 	} else {
-		runtime.GOMAXPROCS(app.Cfg.Prog.CPU)
+		runtime.GOMAXPROCS(Cfg.Prog.CPU)
 	}
 
 	logging.Debug("server start")
@@ -45,7 +66,7 @@ func main() {
 
 	logging.Debug("server init finish")
 	/*go func() {
-		err := http.ListenAndServe(app.Cfg.Prog.HealthPort, nil)
+		err := http.ListenAndServe(Cfg.Prog.HealthPort, nil)
 
 		fmt.Printf("err:%+v", err)
 		if err != nil {
@@ -56,11 +77,11 @@ func main() {
 	registerHttpHandle()
 
 	go func() {
-		err := http.ListenAndServe(app.Cfg.Server.PortInfo, nil)
+		err := http.ListenAndServe(Cfg.Server.PortInfo, nil)
 		//err := http.ListenAndServeTLS(cfg.Server.PortInfo, "cert_server/server.crt",
 		//"cert_server/server.key", nil)
 		if err != nil {
-			logging.Error("ListenAndServe port:%s failed", app.Cfg.Server.PortInfo)
+			logging.Error("ListenAndServe port:%s failed", Cfg.Server.PortInfo)
 		}
 	}()
 
