@@ -27,6 +27,10 @@ func HandleQueryAuthority(w http.ResponseWriter, r *http.Request) {
 }
 
 func handleQueryAuthorityById(w http.ResponseWriter, r *http.Request) {
+	defer r.Body.Close()
+	w.Header().Add("Access-Control-Allow-Origin", "*")
+	logging.Debug("request: %+v", r)
+	
 	id_str := r.URL.Query().Get(":id")
 	id, err := strconv.ParseUint(id_str, 10, 64)
 	if err != nil {
@@ -44,6 +48,10 @@ func handleQueryAuthorityById(w http.ResponseWriter, r *http.Request) {
 }
 
 func handleQueryAuthorityByCode(w http.ResponseWriter, r *http.Request) {
+	defer r.Body.Close()
+	w.Header().Add("Access-Control-Allow-Origin", "*")
+	logging.Debug("request: %+v", r)
+	
 	code := r.URL.Query().Get(":code")
 	auth, err := dbaccess.QueryAuthorityByCode(code)
 	if err != nil && err != sql.ErrNoRows {
@@ -55,6 +63,10 @@ func handleQueryAuthorityByCode(w http.ResponseWriter, r *http.Request) {
 }
 
 func handleQueryAuthorityByGroup(w http.ResponseWriter, r *http.Request) {
+	defer r.Body.Close()
+	w.Header().Add("Access-Control-Allow-Origin", "*")
+	logging.Debug("request: %+v", r)
+	
 	id_str := r.URL.Query().Get(":group")
 	id, err := strconv.ParseUint(id_str, 10, 64)
 	if err != nil {
@@ -72,6 +84,10 @@ func handleQueryAuthorityByGroup(w http.ResponseWriter, r *http.Request) {
 }
 
 func HandleQueryAuthorityGroupAll(w http.ResponseWriter, r *http.Request) {
+	defer r.Body.Close()
+	w.Header().Add("Access-Control-Allow-Origin", "*")
+	logging.Debug("request: %+v", r)
+	
 	code := r.URL.Query().Get(":code")
 	auths, err := dbaccess.QueryAuthorityGroup(code)
 	if err != nil {

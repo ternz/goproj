@@ -26,3 +26,12 @@ create table tb_user_authority(
 	`authority_id`	bigint unsigned,
 	primary key (id)
 );
+
+drop table if exists tb_maintainer;
+create table tb_maintainer(
+	`id` 	bigint	unsigned	auto_increment,
+	`name`	varchar(64)		not null unique,
+	`password`	varchar(128)	not null,
+	`role_code`	varchar(256)	not null,
+	primary key (id)
+);
